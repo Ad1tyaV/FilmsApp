@@ -1,0 +1,136 @@
+import 'dart:convert';
+
+import 'package:FilmsApp/models/Films.dart';
+import 'package:FilmsApp/models/PostsModel.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+
+class ViewFilms extends StatefulWidget {
+  @override
+  _ViewFilms createState() => _ViewFilms();
+}
+
+class _ViewFilms extends State<ViewFilms>
+    with AutomaticKeepAliveClientMixin<ViewFilms> {
+  //String getMoviesEndpoint = "http://localhost:8080/api/v1/films";
+  String getMoviesEndpoint =
+      "https://moviestore-se572.herokuapp.com/api/v1/films";
+  List<Films> apiData = new List<Films>();
+
+  @override
+  Widget build(BuildContext context) {
+    http.Response _response;
+    return Scaffold(
+        // appBar: AppBar(
+        //   title: Text('FilmsApp'),
+        //   centerTitle: true,
+        //   backgroundColor: Colors.blue,
+        // ),
+
+        body: SingleChildScrollView(
+      child: Container(
+        margin: EdgeInsets.fromLTRB(20, 20, 20, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            apiData.length == 0
+                ? noFilms()
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: FilmWidgetList(apiData)),
+            FlatButton(
+              child: Text('Get Movies'),
+              onPressed: () async => {
+                _response = await http.get(getMoviesEndpoint),
+                setState(() {
+                  apiData = new List<Films>();
+                  //http.Response response = await http.get(getMoviesEndpoint);
+                  if (_response.statusCode == 200) {
+                    var pl =
+                        PostsListModel.fromJson(json.decode(_response.body));
+                    //print(_response.body);
+                    //print(pl.postsListsModel);
+                    pl.postsListsModel.forEach((element) {
+                      apiData.add(new Films(
+                          id: element.id,
+                          name: element.name,
+                          v: element.v,
+                          rating: element.rating));
+                    });
+                  } else {}
+                })
+              },
+              color: Colors.blue,
+              splashColor: Colors.amberAccent,
+            )
+          ],
+        ),
+      ),
+    ));
+  }
+
+  Widget noFilms() {
+    return Container(
+      child: Text('Add Some Films!'),
+    );
+  }
+
+  FilmWidgetList(List<Films> _apiData) {
+    List<Widget> widgetList = new List<Widget>();
+    _apiData.forEach((element) => {
+          widgetList.add(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Text('Movie:',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12))),
+              Expanded(
+                flex: 5,
+                child: Text('${element.name}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: Colors.deepOrange)),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                  flex: 2,
+                  child: Text('Rating:',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12))),
+              Expanded(
+                  flex: 3,
+                  // child: Text('${element.rating}',
+                  //     style: TextStyle(
+                  //         fontWeight: FontWeight.bold,
+                  //         fontSize: 15,
+                  //         color: int.parse(element.rating) > 3
+                  //             ? Colors.lightGreen
+                  //             : Colors.red))
+                  child: RatingBar(
+                    initialRating: double.parse(element.rating),
+                    direction: Axis.horizontal,
+                    itemSize: 14,
+                    allowHalfRating: false,
+                    itemCount: 5,
+                    itemPadding: EdgeInsets.symmetric(horizontal: 2.0),
+                    itemBuilder: (context, _) => Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    //onRatingUpdate: () => {},
+                  ))
+            ],
+          ))
+        });
+    return widgetList;
+  }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
+}
