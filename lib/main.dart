@@ -18,18 +18,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // String getMoviesEndpoint = "http://localhost:8080/api/v1/films";
-  // List<Films> apiData = new List<Films>();
   String tokenProvider;
-  int tabControllerLength;
-  bool isLoggedIn;
-
-  get getLoggedDetails => isLoggedIn;
+  int tabControllerLength = 2;
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-        length: 2,
+        length: tabControllerLength,
         child: Scaffold(
             appBar: AppBar(
               title: Text("FilmsApp"),
@@ -39,21 +34,5 @@ class _HomePageState extends State<HomePage> {
               ]),
             ),
             body: TabBarView(children: [ViewFilms(), AddMovie()])));
-  }
-
-  var checkToken = () => {print("Testing")};
-
-  getToken() {
-    return this.tokenProvider;
-  }
-
-  setLoggedIn() {
-    setState(() {
-      isLoggedIn:
-      true;
-    });
-    getLoggedDetails() {
-      return isLoggedIn;
-    }
   }
 }
