@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:FilmsApp/models/Films.dart';
 import 'package:FilmsApp/models/PostsModel.dart';
 import 'package:FilmsApp/screens/AddMovie.dart';
@@ -9,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ViewFilms extends StatefulWidget {
   @override
@@ -25,14 +25,8 @@ class _ViewFilms extends State<ViewFilms>
   @override
   Widget build(BuildContext context) {
     http.Response _response;
-    LoginState _LoginState = Provider.of<LoginState>(context);
+    LoginState _loginState = Provider.of<LoginState>(context);
     return Scaffold(
-        // appBar: AppBar(
-        //   title: Text('FilmsApp'),
-        //   centerTitle: true,
-        //   backgroundColor: Colors.blue,
-        // ),
-
         body: SingleChildScrollView(
       child: Container(
         margin: EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -43,7 +37,7 @@ class _ViewFilms extends State<ViewFilms>
                 ? noFilms()
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: FilmWidgetList(apiData, context, _LoginState)),
+                    children: filmWidgetList(apiData, context, _loginState)),
             FlatButton(
               child: Text('Get Movies'),
               onPressed: () async => {fetchMovies()},
@@ -87,7 +81,7 @@ class _ViewFilms extends State<ViewFilms>
     return RatingBar(
       initialRating: double.parse(rating),
       direction: Axis.horizontal,
-      itemSize: 16,
+      itemSize: 15,
       itemCount: 5,
       itemPadding: EdgeInsets.symmetric(horizontal: 2.0),
       itemBuilder: (context, _) => Icon(
@@ -98,7 +92,7 @@ class _ViewFilms extends State<ViewFilms>
     );
   }
 
-  FilmWidgetList(List<Films> _apiData, context, LoginState _LoginState) {
+  filmWidgetList(List<Films> _apiData, context, LoginState _loginState) {
     List<Widget> _widget = new List<Widget>();
     _widget.add(SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -113,9 +107,9 @@ class _ViewFilms extends State<ViewFilms>
                     cells: [
                       DataCell(Text(e.name,
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18))),
+                              fontWeight: FontWeight.bold, fontSize: 16.5))),
                       DataCell(createRatingBar(e.rating)),
-                      _LoginState.getLoggedInStatus()
+                      _loginState.getLoggedInStatus()
                           ? DataCell(IconButton(
                               icon: Icon(Icons.update),
                               onPressed: () => {
@@ -123,7 +117,7 @@ class _ViewFilms extends State<ViewFilms>
                                       rating = "One";
                                     }),
                                     updateRating(
-                                        e.name, e.rating, context, _LoginState)
+                                        e.name, e.rating, context, _loginState)
                                   }))
                           : DataCell(Text('Login to Update!'))
                     ],
@@ -150,7 +144,7 @@ class _ViewFilms extends State<ViewFilms>
       return "5";
   }
 
-  updateRating(String name, String rating, context, LoginState _LoginState) {
+  updateRating(String name, String rating, context, LoginState _loginState) {
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -158,7 +152,7 @@ class _ViewFilms extends State<ViewFilms>
 
         return AlertDialog(
           title: Text(
-            "Update Rating for Movie ${name}",
+            "Update Rating for Movie $name",
             style: TextStyle(fontSize: 18),
           ),
           content: StatefulBuilder(
@@ -196,28 +190,37 @@ class _ViewFilms extends State<ViewFilms>
                   ),
                   FlatButton(
                     onPressed: () async => {
-                      print(
-                          "Rating is ${rating} and DropdownValue is ${dropDownValue}"),
+                      //Navigator.pop(context),
+                      // print(
+                      //     "Rating is $rating and DropdownValue is $dropDownValue"),
                       if (rating == starMapper(dropDownValue))
-                        {alertMessage(context, "Rating is same as before!")}
+                        {
+                          Navigator.pop(context),
+                          alertMessage(context, "Rating is same as before!"),
+                          //Scaffold.of(context).showSnackBar(SnackBar(
+                          //  content: Text("Rating is same as before!")))
+                          //Navigator.pop(context)
+                        }
                       else
                         {
                           _response = await http.put(moviesEndpoint,
                               headers: <String, String>{
                                 "Content-Type": "application/json",
                                 "Authorization":
-                                    "Bearer ${_LoginState.getToken()}"
+                                    "Bearer ${_loginState.getToken()}"
                               },
                               body: json.encode({
                                 'name': name,
                                 "rating": starMapper(dropDownValue)
                               })),
-                          print(_response.body),
                           if (json.decode(_response.body)["ok"] == 1)
                             {
                               if (json.decode(_response.body)["nModified"] == 1)
                                 {
+                                  Navigator.pop(context),
                                   alertMessage(context, "Rating Updated!!!"),
+                                  //Navigator.pop(context),
+                                  //SnackBar(content: Text("Rating updated!!!")),
                                   fetchMovies()
                                 }
                             }
