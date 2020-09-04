@@ -9,13 +9,15 @@ You need to download flutter SDK to run this project from your PC on an Android/
 You may download flutter SDK from the following directory:
 - [Download Flutter SDK](https://flutter.dev/docs/get-started/install)
 
-Please run the following command once you have flutter SDK ready and path set to the bin directory
 
-`flutter run`
 
 ## How To Run
 
 Go to the project directory and open a terminal
+
+Please run the following command once you have flutter SDK ready and path set to the bin directory
+
+`flutter run`
 
 ## Getting Started
 
