@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:FilmsApp/states/LoginState.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -16,6 +15,7 @@ class AddMovie extends StatefulWidget {
 class _AddMovieState extends State<AddMovie>
     with AutomaticKeepAliveClientMixin<AddMovie> {
   String dropdownValue = "One";
+  TextEditingController textFieldController = new TextEditingController();
   String _movieName = "";
   String loginName = "";
   String postMoviesEndpoint =
@@ -65,14 +65,17 @@ class _AddMovieState extends State<AddMovie>
                           fontSize: 20),
                     ),
                     TextField(
+                      controller: textFieldController,
                       decoration: InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Enter Movie Name',
                           hintText: 'Movie Name'),
                       onChanged: (String newText) => {
                         setState(() {
+                          //print(textFieldController.text);
+                          //textFieldController.text = newText;
                           _movieName = newText;
-                          print(_movieName);
+                          //print(_movieName);
                         })
                       },
                     ),
@@ -121,7 +124,11 @@ class _AddMovieState extends State<AddMovie>
                             print(
                                 "Response Status Code is:${response.statusCode}"),
                             if (response.statusCode == 200)
-                              {alertMessage(context, "Movie has been added")}
+                              {
+                                alertMessage(context, "Movie has been added"),
+                                textFieldController.text = "",
+                                setState(() => {_movieName = ""})
+                              }
                             else if (response.statusCode == 418)
                               {alertMessage(context, "Movie Already Exists!")}
                             else if (response.statusCode == 403)
@@ -233,7 +240,7 @@ Widget loginWidget(setTokenState, setLoginNameState, context, loginName,
               }
             else
               {
-                print("UserName:${loginName}"),
+                print("UserName:$loginName"),
                 //setLoggedIn(false),
                 alertMessage(context, "Enter Login Name!")
               }
